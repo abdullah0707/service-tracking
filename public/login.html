@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>تسجيل الدخول — Service Tracking</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧹</text></svg>">
+  <style>
+    /* ── Variables ─────────────────────────────────────────── */
+    :root {
+      --primary       : #4f63d2;
+      --primary-hover : #3d4fb5;
+      --primary-light : #eef0fb;
+      --bg            : #f0f2f7;
+      --surface       : #ffffff;
+      --border        : #e4e8f5;
+      --text          : #1a1f36;
+      --text-sec      : #6b7896;
+      --text-muted    : #9aa3c2;
+      --error         : #ef4444;
+      --error-bg      : #fef2f2;
+      --success       : #10b981;
+      --radius        : 12px;
+      --shadow        : 0 8px 32px rgba(26,31,54,.12), 0 2px 8px rgba(26,31,54,.06);
+    }
+    [data-theme="dark"] {
+      --bg      : #0d1117;
+      --surface : #161b27;
+      --border  : #2a3148;
+      --text    : #e4e8f5;
+      --text-sec: #8892b0;
+      --text-muted: #4a5568;
+      --primary-light: #1a2050;
+      --error-bg: #1f0f0f;
+      --shadow  : 0 8px 32px rgba(0,0,0,.4);
+    }
+
+    /* ── Reset ─────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'IBM Plex Sans Arabic', 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      direction: rtl;
+    }
+    body.ltr { direction: ltr; font-family: 'Inter', sans-serif; }
+
+    /* ── Background pattern ────────────────────────────────── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 80% 60% at 20% 0%, rgba(79,99,210,.12) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 50% at 80% 100%, rgba(79,99,210,.08) 0%, transparent 60%);
+      pointer-events: none;
+    }
+
+    /* ── Login card ────────────────────────────────────────── */
+    .login-wrap { width: 100%; max-width: 420px; position: relative; z-index: 1; }
+
+    .login-card {
+      background: var(--surface);
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      padding: 40px 36px;
+      animation: cardIn .35s cubic-bezier(.4,0,.2,1);
+    }
+
+    @keyframes cardIn {
+      from { opacity:0; transform:translateY(16px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
+
+    /* ── Logo ──────────────────────────────────────────────── */
+    .logo-wrap { text-align: center; margin-bottom: 32px; }
+
+    .logo-icon {
+      width: 56px; height: 56px;
+      background: linear-gradient(135deg, var(--primary), #7b8df0);
+      border-radius: 16px;
+      display: inline-flex;
+      align-items: center; justify-content: center;
+      font-size: 24px; font-weight: 800;
+      color: #fff;
+      margin-bottom: 14px;
+      box-shadow: 0 4px 16px rgba(79,99,210,.35);
+    }
+
+    .logo-title { font-size: 20px; font-weight: 700; color: var(--text); }
+    .logo-sub   { font-size: 13px; color: var(--text-sec); margin-top: 4px; }
+
+    /* ── Form ──────────────────────────────────────────────── */
+    .form-group { margin-bottom: 18px; }
+
+    .form-group label {
+      display: block;
+      font-size: 13px; font-weight: 600;
+      color: var(--text-sec);
+      margin-bottom: 7px;
+    }
+
+    .input-wrap { position: relative; }
+
+    .input-wrap svg {
+      position: absolute;
+      top: 50%; transform: translateY(-50%);
+      inset-inline-start: 13px;
+      color: var(--text-muted);
+      pointer-events: none;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 11px 13px 11px 40px;
+      border-radius: 10px;
+      border: 1.5px solid var(--border);
+      background: var(--bg);
+      color: var(--text);
+      font-size: 14px;
+      font-family: inherit;
+      transition: border-color .18s, box-shadow .18s;
+      outline: none;
+    }
+
+    body.ltr .form-input { padding: 11px 40px 11px 13px; }
+
+    body.ltr .input-wrap svg {
+      inset-inline-start: auto;
+      inset-inline-end: 13px;
+    }
+
+    .form-input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(79,99,210,.15);
+      background: var(--surface);
+    }
+
+    .form-input.error {
+      border-color: var(--error);
+      box-shadow: 0 0 0 3px rgba(239,68,68,.12);
+    }
+
+    /* Password toggle ────────────────────────────── */
+    .pwd-toggle {
+      position: absolute;
+      top: 50%; transform: translateY(-50%);
+      inset-inline-end: 12px;
+      background: none; border: none;
+      color: var(--text-muted); cursor: pointer;
+      padding: 4px;
+      display: flex; align-items: center;
+    }
+    .pwd-toggle:hover { color: var(--text); }
+
+    /* ── Error banner ──────────────────────────────────────── */
+    .error-banner {
+      display: none;
+      background: var(--error-bg);
+      border: 1.5px solid var(--error);
+      border-radius: 10px;
+      padding: 11px 14px;
+      font-size: 13px;
+      color: var(--error);
+      margin-bottom: 18px;
+      animation: shake .25s ease;
+    }
+
+    .error-banner.show { display: flex; align-items: center; gap: 8px; }
+
+    @keyframes shake {
+      0%,100% { transform:translateX(0); }
+      25%      { transform:translateX(-4px); }
+      75%      { transform:translateX(4px); }
+    }
+
+    /* ── Submit button ─────────────────────────────────────── */
+    .submit-btn {
+      width: 100%;
+      padding: 13px;
+      background: linear-gradient(135deg, var(--primary), #3d4fb5);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: 700;
+      font-family: inherit;
+      cursor: pointer;
+      transition: all .18s;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      box-shadow: 0 3px 12px rgba(79,99,210,.35);
+      margin-top: 8px;
+    }
+
+    .submit-btn:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: 0 5px 18px rgba(79,99,210,.45);
+    }
+
+    .submit-btn:disabled {
+      opacity: .65; cursor: not-allowed; transform: none;
+    }
+
+    /* Spinner inside button */
+    .btn-spinner {
+      width: 16px; height: 16px;
+      border: 2px solid rgba(255,255,255,.4);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin .55s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Default credentials hint ──────────────────────────── */
+    .creds-hint {
+      margin-top: 20px;
+      background: var(--primary-light);
+      border-radius: 10px;
+      padding: 12px 14px;
+      font-size: 12px;
+      color: var(--primary);
+      border: 1px solid rgba(79,99,210,.2);
+    }
+    .creds-hint strong { display: block; margin-bottom: 6px; font-size: 12.5px; }
+    .creds-row { display: flex; justify-content: space-between; padding: 2px 0; font-family: monospace; }
+
+    /* ── Theme + Lang toggles ──────────────────────────────── */
+    .top-controls {
+      display: flex; justify-content: flex-end; gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .ctrl-btn {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text-sec);
+      border-radius: 8px;
+      padding: 6px 12px;
+      font-size: 12px; font-family: inherit;
+      cursor: pointer;
+      display: flex; align-items: center; gap: 5px;
+      transition: all .15s;
+    }
+    .ctrl-btn:hover { background: var(--primary-light); color: var(--primary); border-color: var(--primary); }
+
+    /* ── Change password modal ─────────────────────────────── */
+    .modal-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,.5); backdrop-filter: blur(4px);
+      z-index: 100; align-items: center; justify-content: center; padding: 20px;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal {
+      background: var(--surface); border-radius: 16px;
+      border: 1px solid var(--border); box-shadow: var(--shadow);
+      padding: 28px; width: 100%; max-width: 380px;
+      animation: cardIn .2s ease;
+    }
+    .modal h2 { font-size: 17px; font-weight: 700; margin-bottom: 6px; }
+    .modal p  { font-size: 13px; color: var(--text-sec); margin-bottom: 20px; }
+    .modal-footer { display: flex; gap: 8px; justify-content: flex-end; margin-top: 20px; }
+    .btn-ghost {
+      padding: 9px 18px; border-radius: 8px; border: 1.5px solid var(--border);
+      background: none; color: var(--text-sec); font-size: 13.5px; font-family: inherit;
+      cursor: pointer; transition: .15s;
+    }
+    .btn-ghost:hover { background: var(--bg); }
+  </style>
+</head>
+<body class="rtl">
+
+  <!-- Top controls -->
+  <div style="position:fixed;top:16px;inset-inline-end:16px;display:flex;gap:8px;z-index:10">
+    <button class="ctrl-btn" id="theme-btn" onclick="toggleTheme()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+      </svg>
+      <span id="theme-lbl">داكن</span>
+    </button>
+    <button class="ctrl-btn" onclick="toggleLang()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/>
+        <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+      </svg>
+      <span id="lang-lbl">English</span>
+    </button>
+  </div>
+
+  <div class="login-wrap">
+    <div class="login-card">
+
+      <!-- Logo -->
+      <div class="logo-wrap">
+        <div class="logo-icon">ST</div>
+        <div class="logo-title" id="title-text">Service Tracking</div>
+        <div class="logo-sub" id="sub-text">لوحة إدارة خدمات التنظيف</div>
+      </div>
+
+      <!-- Error banner -->
+      <div class="error-banner" id="error-banner">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+        <span id="error-text"></span>
+      </div>
+
+      <!-- Username -->
+      <div class="form-group">
+        <label id="lbl-username">اسم المستخدم</label>
+        <div class="input-wrap">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+          </svg>
+          <input type="text" id="username" class="form-input" autocomplete="username"
+                 placeholder="admin" dir="ltr" inputmode="text">
+        </div>
+      </div>
+
+      <!-- Password -->
+      <div class="form-group">
+        <label id="lbl-password">كلمة المرور</label>
+        <div class="input-wrap">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+          </svg>
+          <input type="password" id="password" class="form-input" autocomplete="current-password"
+                 placeholder="••••••••" dir="ltr">
+          <button class="pwd-toggle" type="button" onclick="togglePassword()" id="pwd-eye" title="إظهار/إخفاء">
+            <svg id="eye-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Submit -->
+      <button class="submit-btn" id="submit-btn" onclick="doLogin()">
+        <span id="btn-text">تسجيل الدخول</span>
+      </button>
+
+      <!-- Default credentials hint -->
+      <div class="creds-hint" id="creds-hint">
+        <strong>🔑 بيانات الدخول الافتراضية:</strong>
+        <div class="creds-row"><span>المدير:</span><span>admin / admin123</span></div>
+        <div class="creds-row"><span>كول سنتر:</span><span>callcenter / cc1234</span></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Change password modal -->
+  <div class="modal-overlay" id="change-pwd-modal">
+    <div class="modal">
+      <h2 id="cpwd-title">تغيير كلمة المرور</h2>
+      <p id="cpwd-sub">مطلوب تغيير كلمة المرور قبل المتابعة.</p>
+      <div class="form-group">
+        <label id="cpwd-new-lbl">كلمة المرور الجديدة</label>
+        <input type="password" id="new-password" class="form-input" dir="ltr" placeholder="6+ أحرف">
+      </div>
+      <div class="form-group">
+        <label id="cpwd-confirm-lbl">تأكيد كلمة المرور</label>
+        <input type="password" id="confirm-password" class="form-input" dir="ltr" placeholder="أعد الكتابة">
+      </div>
+      <div class="error-banner" id="cpwd-error" style="margin-bottom:0"></div>
+      <div class="modal-footer">
+        <button class="submit-btn" id="cpwd-btn" onclick="doChangePassword()" style="margin-top:0;flex:1">
+          <span id="cpwd-btn-text">حفظ</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+<script>
+  // ── State ─────────────────────────────────────────────────
+  let lang  = localStorage.getItem('st_lang')  || 'ar';
+  let theme = localStorage.getItem('st_theme') || 'light';
+  let pendingToken = null; // token waiting for pwd change
+
+  const T = {
+    ar: {
+      title:'Service Tracking', sub:'لوحة إدارة خدمات التنظيف',
+      username:'اسم المستخدم', password:'كلمة المرور',
+      login:'تسجيل الدخول', loggingIn:'جارٍ التحميل...',
+      errEmpty:'يرجى إدخال اسم المستخدم وكلمة المرور',
+      errInvalid:'اسم المستخدم أو كلمة المرور غير صحيحة',
+      errServer:'تعذّر الاتصال بالسيرفر، يرجى المحاولة مرة أخرى',
+      creds:'🔑 بيانات الدخول الافتراضية:',
+      admin:'المدير:', cc:'كول سنتر:',
+      darkMode:'داكن', lightMode:'فاتح',
+      cpwdTitle:'تغيير كلمة المرور',
+      cpwdSub:'مطلوب تغيير كلمة المرور قبل المتابعة.',
+      cpwdNew:'كلمة المرور الجديدة', cpwdConfirm:'تأكيد كلمة المرور',
+      cpwdSave:'حفظ', cpwdSaving:'جارٍ الحفظ...',
+      cpwdMismatch:'كلمتا المرور غير متطابقتين',
+      cpwdShort:'يجب أن تكون كلمة المرور 6 أحرف على الأقل',
+    },
+    en: {
+      title:'Service Tracking', sub:'Cleaning Services Dashboard',
+      username:'Username', password:'Password',
+      login:'Sign In', loggingIn:'Signing in...',
+      errEmpty:'Please enter username and password',
+      errInvalid:'Invalid username or password',
+      errServer:'Could not reach the server, please try again',
+      creds:'🔑 Default credentials:',
+      admin:'Admin:', cc:'Call Center:',
+      darkMode:'Dark', lightMode:'Light',
+      cpwdTitle:'Change Password',
+      cpwdSub:'You must change your password before continuing.',
+      cpwdNew:'New Password', cpwdConfirm:'Confirm Password',
+      cpwdSave:'Save', cpwdSaving:'Saving...',
+      cpwdMismatch:'Passwords do not match',
+      cpwdShort:'Password must be at least 6 characters',
+    }
+  };
+
+  function t(k) { return T[lang][k] || k; }
+
+  // ── Apply language ─────────────────────────────────────────
+  function applyLang() {
+    document.documentElement.lang = lang;
+    document.documentElement.dir  = lang==='ar'?'rtl':'ltr';
+    document.body.className = lang==='ar'?'rtl':'ltr';
+    document.getElementById('lbl-username').textContent   = t('username');
+    document.getElementById('lbl-password').textContent   = t('password');
+    document.getElementById('btn-text').textContent       = t('login');
+    document.getElementById('sub-text').textContent       = t('sub');
+    document.getElementById('lang-lbl').textContent       = lang==='ar'?'English':'عربي';
+    document.getElementById('cpwd-title').textContent     = t('cpwdTitle');
+    document.getElementById('cpwd-sub').textContent       = t('cpwdSub');
+    document.getElementById('cpwd-new-lbl').textContent   = t('cpwdNew');
+    document.getElementById('cpwd-confirm-lbl').textContent = t('cpwdConfirm');
+    document.getElementById('cpwd-btn-text').textContent  = t('cpwdSave');
+  }
+
+  function toggleLang() {
+    lang = lang==='ar'?'en':'ar';
+    localStorage.setItem('st_lang', lang);
+    applyLang();
+  }
+
+  // ── Apply theme ────────────────────────────────────────────
+  function applyTheme() {
+    document.documentElement.setAttribute('data-theme', theme);
+    document.getElementById('theme-lbl').textContent = theme==='dark'?t('lightMode'):t('darkMode');
+  }
+
+  function toggleTheme() {
+    theme = theme==='dark'?'light':'dark';
+    localStorage.setItem('st_theme', theme);
+    applyTheme();
+  }
+
+  // ── Password visibility ────────────────────────────────────
+  function togglePassword() {
+    const inp = document.getElementById('password');
+    const show = inp.type === 'password';
+    inp.type = show ? 'text' : 'password';
+    document.getElementById('eye-icon').innerHTML = show
+      ? '<line x1="1" y1="1" x2="23" y2="23"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><path d="M1 12s4-8 11-8"/>'
+      : '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>';
+  }
+
+  // ── Show error ─────────────────────────────────────────────
+  function showError(msg) {
+    const el = document.getElementById('error-banner');
+    document.getElementById('error-text').textContent = msg;
+    el.classList.add('show');
+    document.getElementById('username').classList.add('error');
+    document.getElementById('password').classList.add('error');
+  }
+
+  function clearError() {
+    document.getElementById('error-banner').classList.remove('show');
+    document.getElementById('username').classList.remove('error');
+    document.getElementById('password').classList.remove('error');
+  }
+
+  // ── Login ─────────────────────────────────────────────────
+  async function doLogin() {
+    clearError();
+    const username = document.getElementById('username').value.trim();
+    const password = document.getElementById('password').value;
+    if (!username || !password) { showError(t('errEmpty')); return; }
+
+    const btn  = document.getElementById('submit-btn');
+    const text = document.getElementById('btn-text');
+    btn.disabled = true;
+    text.innerHTML = `<span class="btn-spinner"></span> ${t('loggingIn')}`;
+
+    try {
+      const res  = await fetch('/api/auth/login', {
+        method : 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body   : JSON.stringify({ username, password }),
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        showError(t('errInvalid'));
+        btn.disabled = false;
+        text.textContent = t('login');
+        return;
+      }
+
+      // Store token and user
+      localStorage.setItem('st_token', data.token);
+      localStorage.setItem('st_user', JSON.stringify(data.user));
+
+      if (data.user.must_change_password) {
+        // Show change password modal before proceeding
+        pendingToken = data.token;
+        document.getElementById('change-pwd-modal').classList.add('open');
+        btn.disabled = false;
+        text.textContent = t('login');
+        return;
+      }
+
+      // Redirect to dashboard
+      window.location.href = '/';
+
+    } catch {
+      showError(t('errServer'));
+      btn.disabled = false;
+      text.textContent = t('login');
+    }
+  }
+
+  // ── Change password ────────────────────────────────────────
+  async function doChangePassword() {
+    const np  = document.getElementById('new-password').value;
+    const cnf = document.getElementById('confirm-password').value;
+    const errEl = document.getElementById('cpwd-error');
+    errEl.classList.remove('show');
+
+    if (np.length < 6) {
+      document.getElementById('cpwd-error').querySelector
+        ? null : errEl.insertAdjacentHTML('afterbegin','<span></span>');
+      errEl.textContent = t('cpwdShort');
+      errEl.classList.add('show'); return;
+    }
+    if (np !== cnf) {
+      errEl.textContent = t('cpwdMismatch');
+      errEl.classList.add('show'); return;
+    }
+
+    const btn  = document.getElementById('cpwd-btn');
+    const text = document.getElementById('cpwd-btn-text');
+    btn.disabled = true;
+    text.innerHTML = `<span class="btn-spinner"></span> ${t('cpwdSaving')}`;
+
+    try {
+      const res = await fetch('/api/auth/change-password', {
+        method : 'PUT',
+        headers: {
+          'Content-Type'  : 'application/json',
+          'Authorization' : `Bearer ${pendingToken}`,
+        },
+        body: JSON.stringify({ current_password: document.getElementById('password').value, new_password: np }),
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        errEl.textContent = data.error || t('errServer');
+        errEl.classList.add('show');
+        btn.disabled = false; text.textContent = t('cpwdSave');
+        return;
+      }
+
+      // Update stored user — password changed
+      const user = JSON.parse(localStorage.getItem('st_user') || '{}');
+      user.must_change_password = false;
+      localStorage.setItem('st_user', JSON.stringify(user));
+      window.location.href = '/';
+
+    } catch {
+      errEl.textContent = t('errServer');
+      errEl.classList.add('show');
+      btn.disabled = false; text.textContent = t('cpwdSave');
+    }
+  }
+
+  // ── Enter key support ──────────────────────────────────────
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      if (document.getElementById('change-pwd-modal').classList.contains('open')) doChangePassword();
+      else doLogin();
+    }
+  });
+
+  // ── If already logged in → redirect ───────────────────────
+  (async () => {
+    const token = localStorage.getItem('st_token');
+    if (token) {
+      try {
+        const r = await fetch('/api/auth/me', { headers:{ Authorization:`Bearer ${token}` } });
+        if (r.ok) { window.location.href = '/'; return; }
+      } catch {}
+      localStorage.removeItem('st_token');
+      localStorage.removeItem('st_user');
+    }
+  })();
+
+  // ── Init ──────────────────────────────────────────────────
+  applyLang();
+  applyTheme();
+  document.getElementById('username').focus();
+</script>
+</body>
+</html>

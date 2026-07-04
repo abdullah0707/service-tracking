@@ -1,0 +1,26 @@
+[
+  {
+    "id": "u1",
+    "username": "admin",
+    "display_name": "مدير النظام",
+    "role": "admin",
+    "salt": "2372a956453a1aa00cd9b31a0cc4834c",
+    "password_hash": "f85a1ddb8e77ec4480fcbeaf34412886ee7936997dede36593530ac17b3a3618",
+    "created_at": "2026-07-04T14:59:33.031Z",
+    "must_change_password": false,
+    "last_login": "2026-07-04T16:03:27.505Z",
+    "updated_at": "2026-07-04T16:04:53.844Z"
+  },
+  {
+    "id": "u2",
+    "username": "callcenter",
+    "display_name": "موظف الكول سنتر",
+    "role": "callcenter",
+    "salt": "3c7e83770762a4ed001be1451d6cda7e",
+    "password_hash": "6f8a22dfdf1303a94f95e82212e58ef0657f86daffd2018481d08e6c9901c562",
+    "created_at": "2026-07-04T14:59:33.043Z",
+    "must_change_password": false,
+    "last_login": "2026-07-04T14:59:34.736Z",
+    "updated_at": "2026-07-04T14:59:34.732Z"
+  }
+]

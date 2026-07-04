@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>تقييم الخدمة — Service Tracking</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    body { display:flex; align-items:center; justify-content:center; min-height:100vh; padding:20px; }
+    .feedback-page { width:100%; max-width:480px; }
+    .fb-card { background:var(--bg-surface); border:1px solid var(--border); border-radius:var(--radius-xl); box-shadow:var(--shadow-lg); padding:36px 32px; }
+    .fb-logo { text-align:center; margin-bottom:28px; }
+    .fb-logo .logo-mark { width:52px; height:52px; background:var(--primary); border-radius:var(--radius-lg); display:flex; align-items:center; justify-content:center; font-size:22px; font-weight:700; color:#fff; margin:0 auto 12px; }
+    .fb-logo h1 { font-size:20px; font-weight:700; }
+    .fb-logo p  { font-size:13px; color:var(--text-secondary); margin-top:4px; }
+    .fb-order-info { background:var(--bg-base); border-radius:var(--radius-md); padding:14px 16px; margin-bottom:24px; font-size:13.5px; }
+    .fb-order-info .row { display:flex; justify-content:space-between; gap:8px; padding:4px 0; }
+    .fb-order-info .lbl { color:var(--text-secondary); }
+    .fb-order-info .val { font-weight:600; }
+    .star-select { display:flex; justify-content:center; gap:10px; margin:16px 0; }
+    .star-btn { font-size:38px; cursor:pointer; transition:transform .15s; line-height:1; background:none; border:none; filter:grayscale(1); opacity:.35; }
+    .star-btn.lit { filter:grayscale(0); opacity:1; }
+    .star-btn:hover { transform:scale(1.2); }
+    .fb-notes { width:100%; min-height:88px; resize:vertical; }
+    .fb-submit { width:100%; padding:13px; font-size:15px; margin-top:16px; border-radius:var(--radius-md); border:none; background:var(--primary); color:#fff; font-weight:700; cursor:pointer; transition:background var(--transition); font-family:inherit; }
+    .fb-submit:hover:not(:disabled) { background:var(--primary-hover); }
+    .fb-submit:disabled { opacity:.5; cursor:not-allowed; }
+    .rating-label { text-align:center; font-size:14px; color:var(--primary); min-height:22px; font-weight:600; }
+    .success-state, .error-state { text-align:center; padding:20px 0; }
+    .success-icon { font-size:64px; margin-bottom:16px; }
+    .success-title { font-size:20px; font-weight:700; margin-bottom:8px; }
+    .success-sub { color:var(--text-secondary); font-size:14px; line-height:1.6; }
+  </style>
+</head>
+<body class="rtl">
+<div class="feedback-page">
+  <div class="fb-card">
+    <div class="fb-logo">
+      <div class="logo-mark">ST</div>
+      <h1>Service Tracking</h1>
+      <p id="fb-subtitle">تقييم الخدمة</p>
+    </div>
+    <div id="fb-content">
+      <div class="loading-spinner"><div class="spinner"></div></div>
+    </div>
+  </div>
+</div>
+<div id="toast-container"></div>
+<script src="/js/i18n.js"></script>
+<script src="/js/api.js"></script>
+<script>
+  window.i18n.init();
+  document.documentElement.setAttribute('data-theme', localStorage.getItem('st_theme') || 'light');
+
+  const params  = new URLSearchParams(window.location.search);
+  const orderId = params.get('order');
+  const type    = params.get('type');
+  let selectedRating = 0;
+  let orderData = null;
+
+  const LABELS = {
+    ar: {1:'سيء جداً',2:'سيء',3:'مقبول',4:'جيد',5:'ممتاز!'},
+    en: {1:'Very Bad',2:'Bad',3:'OK',4:'Good',5:'Excellent!'},
+  };
+
+  function fmtDate(d) {
+    if (!d) return '—';
+    return new Date(d+'T00:00:00').toLocaleDateString(
+      window.i18n.current==='ar'?'ar-EG':'en-GB',
+      {year:'numeric',month:'short',day:'numeric'}
+    );
+  }
+
+  async function loadOrder() {
+    if (!orderId || !type) { renderError(); return; }
+    try {
+      orderData = await api.feedback.getOrder(orderId);
+      renderForm();
+    } catch { renderError(); }
+  }
+
+  function alreadyRated() {
+    if (!orderData) return false;
+    if (type==='customer' && orderData.customer_feedback?.rating) return true;
+    if (type==='worker'   && orderData.worker_feedback?.rating)   return true;
+    return false;
+  }
+
+  function renderForm() {
+    const lang = window.i18n.current;
+    const isCustomer = type==='customer';
+    document.getElementById('fb-subtitle').textContent = isCustomer
+      ? (lang==='ar'?'تقييمك لجودة الخدمة':'Rate Service Quality')
+      : (lang==='ar'?'تقييمك للعميل':'Rate the Customer');
+
+    if (alreadyRated()) { renderAlreadyRated(); return; }
+
+    const who = isCustomer ? (orderData.worker_name||'العامل') : (orderData.customer_name||'العميل');
+    const question = isCustomer
+      ? (lang==='ar'?`كيف كانت تجربتك مع <strong>${who}</strong>؟`:`How was your experience with <strong>${who}</strong>?`)
+      : (lang==='ar'?`كيف كان العميل <strong>${who}</strong>؟`:`How was the customer <strong>${who}</strong>?`);
+
+    document.getElementById('fb-content').innerHTML = `
+      <div class="fb-order-info">
+        <div class="row"><span class="lbl">${lang==='ar'?'رقم الأوردر':'Order'}</span><span class="val dir-ltr">#${orderId.slice(-6).toUpperCase()}</span></div>
+        <div class="row"><span class="lbl">${lang==='ar'?'التاريخ':'Date'}</span><span class="val">${fmtDate(orderData.date)}</span></div>
+        <div class="row"><span class="lbl">${lang==='ar'?'المنطقة':'Area'}</span><span class="val">${orderData.area||'—'}</span></div>
+      </div>
+      <p style="text-align:center;font-size:15px;margin-bottom:8px">${question}</p>
+      <div class="rating-label" id="rating-label">&nbsp;</div>
+      <div class="star-select">
+        ${[1,2,3,4,5].map(i=>`<button class="star-btn" data-val="${i}" onclick="selectRating(${i})" onmouseover="previewRating(${i})" onmouseout="restoreRating()">★</button>`).join('')}
+      </div>
+      <div class="form-group" style="margin-top:20px">
+        <label>${lang==='ar'?'ملاحظات (اختياري)':'Notes (optional)'}</label>
+        <textarea id="fb-notes" class="form-control fb-notes" placeholder="${lang==='ar'?'أضف ملاحظاتك هنا...':'Add your notes here...'}"></textarea>
+      </div>
+      <button class="fb-submit" id="fb-submit" onclick="submitFeedback()" disabled>
+        ${lang==='ar'?'إرسال التقييم':'Submit Feedback'}
+      </button>`;
+  }
+
+  function selectRating(val) {
+    selectedRating = val;
+    updateStars(val);
+    document.getElementById('rating-label').textContent = LABELS[window.i18n.current]?.[val]||'';
+    document.getElementById('fb-submit').disabled = false;
+  }
+  function previewRating(val) {
+    updateStars(val);
+    document.getElementById('rating-label').textContent = LABELS[window.i18n.current]?.[val]||'';
+  }
+  function restoreRating() {
+    updateStars(selectedRating);
+    document.getElementById('rating-label').textContent = selectedRating ? LABELS[window.i18n.current]?.[selectedRating] : '';
+  }
+  function updateStars(upTo) {
+    document.querySelectorAll('.star-btn').forEach(btn => {
+      btn.classList.toggle('lit', parseInt(btn.dataset.val) <= upTo);
+    });
+  }
+
+  async function submitFeedback() {
+    if (!selectedRating) return;
+    const lang = window.i18n.current;
+    const btn  = document.getElementById('fb-submit');
+    btn.disabled = true;
+    btn.textContent = lang==='ar'?'جارٍ الإرسال...':'Sending...';
+    try {
+      const data = { rating: selectedRating, notes: document.getElementById('fb-notes').value.trim() };
+      if (type==='customer') await api.feedback.customer(orderId, data);
+      else                   await api.feedback.worker(orderId, data);
+      renderSuccess();
+    } catch {
+      btn.disabled = false;
+      btn.textContent = lang==='ar'?'إرسال التقييم':'Submit Feedback';
+    }
+  }
+
+  function renderSuccess() {
+    const lang = window.i18n.current;
+    document.getElementById('fb-content').innerHTML = `
+      <div class="success-state">
+        <div class="success-icon">🌟</div>
+        <div class="success-title">${lang==='ar'?'شكراً جزيلاً!':'Thank You!'}</div>
+        <p class="success-sub">${lang==='ar'?'تم إرسال تقييمك بنجاح.<br>مساهمتك تساعدنا على تحسين خدمتنا.':'Your feedback has been submitted successfully.<br>Thank you for helping us improve.'}</p>
+      </div>`;
+  }
+  function renderAlreadyRated() {
+    const lang = window.i18n.current;
+    document.getElementById('fb-content').innerHTML = `
+      <div class="success-state">
+        <div class="success-icon">✅</div>
+        <div class="success-title">${lang==='ar'?'تم التقييم مسبقاً':'Already Rated'}</div>
+        <p class="success-sub">${lang==='ar'?'لقد قمت بتقييم هذا الأوردر من قبل. شكراً!':'You have already rated this order. Thank you!'}</p>
+      </div>`;
+  }
+  function renderError() {
+    const lang = window.i18n.current;
+    document.getElementById('fb-content').innerHTML = `
+      <div class="error-state">
+        <p style="font-size:48px;margin-bottom:12px">😕</p>
+        <p>${lang==='ar'?'رابط التقييم غير صالح.':'Invalid feedback link.'}</p>
+      </div>`;
+  }
+  loadOrder();
+</script>
+</body>
+</html>

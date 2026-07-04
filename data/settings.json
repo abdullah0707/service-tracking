@@ -1,0 +1,9 @@
+{
+  "wa_templates": {
+    "customer_ar": "🌟 شكراً! {link}",
+    "customer_en": "🌟 Thanks! {link}",
+    "worker_ar": "🌟 شكراً على عملك! {link}",
+    "worker_en": "🌟 Great work! {link}"
+  },
+  "updated_at": "2026-07-03T22:14:54.882Z"
+}

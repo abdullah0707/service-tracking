@@ -1,0 +1,46 @@
+[
+  {
+    "id": "w1",
+    "name": "فاطمة عبد الرحمن",
+    "phone": "0521111111",
+    "area": "مدينة نصر",
+    "address": "شارع الحجاز، ع٣",
+    "national_id": "29501010100001",
+    "status": "available",
+    "average_rating": 4,
+    "orders_history": []
+  },
+  {
+    "id": "w2",
+    "name": "منى إبراهيم سعد",
+    "phone": "0532222222",
+    "area": "المهندسين",
+    "address": "شارع سودان، ع١",
+    "national_id": "29801010100002",
+    "status": "busy",
+    "average_rating": null,
+    "orders_history": []
+  },
+  {
+    "id": "w3",
+    "name": "هبة محمود طاهر",
+    "phone": "0543333333",
+    "area": "التجمع الخامس",
+    "address": "القاهرة الجديدة",
+    "national_id": "29901010100003",
+    "status": "available",
+    "average_rating": 4.2,
+    "orders_history": []
+  },
+  {
+    "id": "w4",
+    "name": "نهى كمال عبد الله",
+    "phone": "0554444444",
+    "area": "المهندسين",
+    "address": "شارع لبنان، ع٤",
+    "national_id": "30001010100004",
+    "status": "off",
+    "average_rating": 2.8,
+    "orders_history": []
+  }
+]
